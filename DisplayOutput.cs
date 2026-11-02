@@ -43,6 +43,16 @@ public sealed class DisplayOutput : Window
         timer.Tick += (_, _) => Tick();
     }
 
+    public static void Stop()
+    {
+        instance?.Close();
+    }
+
+    public static void Refresh()
+    {
+        if (instance != null) instance.lastBounds = "";
+    }
+
     public static void Start()
     {
         if (instance != null) return;
