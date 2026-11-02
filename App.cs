@@ -25,6 +25,10 @@ public sealed class Settings
     public bool Flip { get; set; } = true;
     public int Fps { get; set; } = 30;
     public string Port { get; set; } = "auto";
+    /// Enable a separate Windows display window; no USB panel is required.
+    public bool DisplayWindow { get; set; }
+    /// Windows Forms screen device name, e.g. \\.\\DISPLAY2; empty selects primary.
+    public string DisplayDevice { get; set; } = "";
     public string Net { get; set; } = "auto";
     public string Gpu { get; set; } = "auto";
     public bool Motherboard { get; set; }
@@ -397,6 +401,7 @@ public static class App
         WatchThemes();
         if (!ApplyHotkey()) Log.Warn($"shortcut {Cfg.NextScreenKey} is taken");
         tray = Tray.Create();
+        if (Cfg.DisplayWindow) DisplayOutput.Start();
         if (!startHidden || shotDir != null) ShowWindow();
         if (shotDir != null) Wpf.Dispatcher.BeginInvoke(async () => { await Task.Delay(1500); await window!.Screenshots(shotDir); Quit(); }, DispatcherPriority.ApplicationIdle);
         Wpf.Run();
