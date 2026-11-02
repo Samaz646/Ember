@@ -1,5 +1,7 @@
 using System;
 using System.Linq;
+using System.Runtime.InteropServices;
+using System.Windows.Interop;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -22,6 +24,10 @@ public sealed class DisplayOutput : Window
     readonly DispatcherTimer timer = new() { Interval = TimeSpan.FromMilliseconds(100) };
     int seen = -1;
     string lastBounds = "";
+    const uint SWP_NOZORDER = 0x0004, SWP_NOACTIVATE = 0x0010;
+
+    [DllImport("user32.dll", SetLastError = true)]
+    static extern bool SetWindowPos(IntPtr hWnd, IntPtr after, int x, int y, int width, int height, uint flags);
 
     DisplayOutput()
     {
@@ -57,6 +63,11 @@ public sealed class DisplayOutput : Window
     {
         if (instance != null) return;
         instance = new DisplayOutput();
+        // Create the HWND without showing a dashboard on the primary screen.
+        // A missing configured target remains hidden until it reconnects.
+        instance.WindowStartupLocation = WindowStartupLocation.Manual;
+        instance.Left = -32000;
+        instance.Top = -32000;
         instance.Show();
     }
 
@@ -76,16 +87,12 @@ public sealed class DisplayOutput : Window
         var key = target.DeviceName + ":" + b;
         if (key != lastBounds)
         {
-            // WPF window coordinates are DIPs. Use the current HwndSource
-            // transform to convert physical screen pixels correctly.
-            var source = System.Windows.PresentationSource.FromVisual(this);
-            var matrix = source?.CompositionTarget?.TransformFromDevice ?? Matrix.Identity;
-            var tl = matrix.Transform(new Point(b.Left, b.Top));
-            var br = matrix.Transform(new Point(b.Right, b.Bottom));
-            Left = tl.X;
-            Top = tl.Y;
-            Width = Math.Max(1, br.X - tl.X);
-            Height = Math.Max(1, br.Y - tl.Y);
+            // Win32 monitor bounds are physical pixels. Position the HWND in
+            // physical pixels rather than converting with the wrong monitor DPI.
+            var hwnd = new WindowInteropHelper(this).Handle;
+            if (hwnd != IntPtr.Zero)
+                SetWindowPos(hwnd, IntPtr.Zero, b.Left, b.Top, b.Width, b.Height,
+                    SWP_NOZORDER | SWP_NOACTIVATE);
             lastBounds = key;
         }
 
