@@ -1,0 +1,23 @@
+name: Windows display build
+on:
+  push:
+    branches: [feature/windows-display-output]
+  workflow_dispatch:
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+      - name: Restore
+        run: dotnet restore Ember.csproj
+      - name: Build
+        run: dotnet build Ember.csproj -c Release --no-restore
+      - name: Publish portable app
+        run: dotnet publish Ember.csproj -c Release -r win-x64 --self-contained false -p:PublishSingleFile=true -o publish
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Ember-WindowsDisplay-win-x64
+          path: publish/
