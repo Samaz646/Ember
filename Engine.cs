@@ -423,7 +423,7 @@ public sealed class Engine : IDisposable
                     frames = 0; bytes = 0; statT = Clock.Now;
                     if (Connected && ++statLines % 60 == 1) Log.Info($"stats: {Fps:0.0} fps, {KBps:0.0} KB/s, render {RenderMs:0.00} ms, theme {theme.Id}");
                 }
-                double period = phase is 2 or 4 ? 1.0 / 60 : renderer!.Animating || pending || sent > 0 ? 1.0 / fps : phase == 3 ? 0.1 : 0.25;
+                double period = phase is 2 or 4 ? 1.0 / 60 : DisplayWanted || renderer!.Animating || pending || sent > 0 ? 1.0 / fps : phase == 3 ? 0.1 : 0.25;
                 double wait = period - (Clock.Now - t0);
                 if (wait > 0.001) pacer.Wait(wait, wake);
             }
