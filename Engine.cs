@@ -275,6 +275,7 @@ public sealed class Engine : IDisposable
     const double FadeIn = 0.7, Hold = 2.8, FadeOut = 0.5, DrawTimeout = 4;
 
     public volatile bool PreviewWanted;
+    public volatile bool DisplayWanted;
     /// Tint the preview where pixels went over USB in the last moment, to see what a theme costs.
     public volatile bool ShowTraffic;
     readonly float[] heat = new float[FrameDiff.TX * FrameDiff.TY];
@@ -394,7 +395,7 @@ public sealed class Engine : IDisposable
                 }
                 RenderMs = (float)((Clock.Now - r0) * 1000);
                 if (ShowTraffic) for (int i = 0; i < heat.Length; i++) heat[i] *= (float)Math.Exp(-dt / 0.35);
-                if (PreviewWanted)
+                if (PreviewWanted || DisplayWanted)
                     lock (previewLock)
                     {
                         Marshal.Copy(frame.GetPixels(), preview, 0, preview.Length);
