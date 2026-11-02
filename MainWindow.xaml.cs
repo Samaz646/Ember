@@ -800,6 +800,24 @@ public partial class MainWindow : Window
         var cfg = App.Cfg;
         var sw = (Style)FindResource("Switch");
 
+        Section("Windows display output");
+        Row("Enable dashboard window", "Show Ember on a Windows monitor without a USB LCD.",
+            Toggle(cfg.DisplayWindow, v =>
+            {
+                cfg.DisplayWindow = v;
+                cfg.Save();
+                if (v) DisplayOutput.Start();
+                else DisplayOutput.Stop();
+            }, sw));
+        var displays = new List<(string, string)> { ("", "Primary monitor") };
+        foreach (var display in System.Windows.Forms.Screen.AllScreens)
+            displays.Add((display.DeviceName, display.DeviceName + " (" + display.Bounds.Width + " x " + display.Bounds.Height + ")"));
+        if (!string.IsNullOrWhiteSpace(cfg.DisplayDevice) && !displays.Any(d => d.Item1 == cfg.DisplayDevice))
+            displays.Add((cfg.DisplayDevice, cfg.DisplayDevice + " (disconnected)"));
+        Row("Dashboard monitor", "The window stays hidden if the selected monitor disconnects.",
+            Combo(displays, cfg.DisplayDevice, v => { cfg.DisplayDevice = v; cfg.Save(); DisplayOutput.Refresh(); }));
+        Row("Refresh monitors", null, Btn("Refresh", null, false, BuildSettings));
+
         Section(T("Screen"));
         var ports = new List<(string, string)> { ("auto", T("Automatic")) };
         var found = TuringLcd.FindPorts();
