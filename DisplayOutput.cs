@@ -26,6 +26,8 @@ public sealed class DisplayOutput : Window
     string lastBounds = "";
     int positionChecks;
     bool wasHidden;
+    readonly Image displayImage;
+    string lastScaleMode = "";
     const uint SWP_NOZORDER = 0x0004, SWP_NOACTIVATE = 0x0010;
 
     [StructLayout(LayoutKind.Sequential)]
@@ -46,12 +48,13 @@ public sealed class DisplayOutput : Window
         ShowActivated = false;
         Topmost = false;
         Background = Brushes.Black;
-        Content = new Image
+        displayImage = new Image
         {
             Source = bitmap,
             Stretch = Stretch.Uniform,
             SnapsToDevicePixels = true
         };
+        Content = displayImage;
         Loaded += (_, _) => { App.Engine.DisplayWanted = true; timer.Start(); Tick(); };
         Closed += (_, _) => { timer.Stop(); App.Engine.DisplayWanted = false; instance = null; };
         timer.Tick += (_, _) => Tick();
@@ -81,6 +84,18 @@ public sealed class DisplayOutput : Window
 
     void Tick()
     {
+        // Keep scaling independent of monitor resolution; update without reopening the window.
+        var scaleMode = App.Cfg.DisplayScaleMode;
+        if (!string.Equals(scaleMode, lastScaleMode, StringComparison.OrdinalIgnoreCase))
+        {
+            displayImage.Stretch = scaleMode?.ToLowerInvariant() switch
+            {
+                "fill" => Stretch.UniformToFill,
+                "stretch" => Stretch.Fill,
+                _ => Stretch.Uniform
+            };
+            lastScaleMode = scaleMode ?? "";
+        }
         // A disconnected virtual monitor must never cause the dashboard to
         // appear on the gaming monitor.
         var target = FindTarget();
