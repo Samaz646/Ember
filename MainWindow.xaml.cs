@@ -816,6 +816,9 @@ public partial class MainWindow : Window
             displays.Add((cfg.DisplayDevice, cfg.DisplayDevice + " (disconnected)"));
         Row("Dashboard monitor", "The window stays hidden if the selected monitor disconnects.",
             Combo(displays, cfg.DisplayDevice, v => { cfg.DisplayDevice = v; cfg.Save(); DisplayOutput.Refresh(); }));
+        Row("Dashboard scaling", "Fit shows everything; Fill crops edges; Stretch may distort.",
+            Combo(new List<(string, string)> { ("Fit", "Fit (preserve aspect ratio)"), ("Fill", "Fill (crop edges)"), ("Stretch", "Stretch (fill entire monitor)") },
+                cfg.DisplayScaleMode, v => { cfg.DisplayScaleMode = v; cfg.Save(); }));
         Row("Refresh monitors", null, Btn("Refresh", null, false, BuildSettings));
 
         Section(T("Screen"));
