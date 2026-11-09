@@ -29,6 +29,8 @@ public sealed class Settings
     public bool DisplayWindow { get; set; }
     /// Windows Forms screen device name, e.g. \\.\\DISPLAY2; empty selects primary.
     public string DisplayDevice { get; set; } = "";
+    /// Dashboard scaling on the Windows monitor: Fit (no cropping), Fill (crop edges), Stretch (distort).
+    public string DisplayScaleMode { get; set; } = "Fit";
     public string Net { get; set; } = "auto";
     public string Gpu { get; set; } = "auto";
     public bool Motherboard { get; set; }
